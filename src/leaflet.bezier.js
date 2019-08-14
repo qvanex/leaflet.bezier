@@ -67,79 +67,33 @@ let Bezier = L.Path.extend({
         });
 
     },
-    setAnimatePlane: function (path) {
-
-        let self = this;
-
-        if (this.spaceship_img)
-            this.spaceship_img.remove();
-
-        let SnapSvg = Snap('.leaflet-overlay-pane>svg');
-
-        let spaceship_img = this.spaceship_img = SnapSvg.image(this.icon.path).attr({
-            visibility: "hidden"
-        });
-
-
-        let spaceship = SnapSvg.group(spaceship_img);
-        let flight_path = SnapSvg.path(path).attr({
-            'fill': 'none',
-            'stroke': 'none'
-        });
-
-        let full_path_length = Snap.path.getTotalLength(flight_path);
-        let half_path_length = full_path_length / 2;
-        let third_path_length = full_path_length / 3;
-        let forth_path_length = full_path_length / 4;
-
-
-        let width = forth_path_length / this._map.getZoom();
-        let height = forth_path_length / this._map.getZoom();
-
+    setAnimatePlane: function setAnimatePlane(path) {
+        if (this.spaceship_img) this.spaceship_img.remove();
+        var SnapSvg = Snap('.leaflet-overlay-pane>svg');
+        var spaceship_img = this.spaceship_img = SnapSvg.image(this.icon.path).attr({ visibility: "hidden" });
+        var spaceship = SnapSvg.group(spaceship_img);
+        var flight_path = SnapSvg.path(path).attr({ 'fill': 'none', 'stroke': 'none' });
+        var full_path_length = Snap.path.getTotalLength(flight_path);
+        var width = full_path_length / 6 / this._map.getZoom();
+        var height = full_path_length / 6 / this._map.getZoom();
         width = Math.min(Math.max(width, 30), 64);
         height = Math.min(Math.max(height, 30), 64);
-
-
-        let last_step = 0;
-
-
-        Snap.animate(0, forth_path_length, function (step) {
-
-            //show image when plane start to animate
-            spaceship_img.attr({
-                visibility: "visible"
-            });
-
-            spaceship_img.attr({width: width, height: height, class: self.icon.class});
-
-            last_step = step;
-
-            let moveToPoint = Snap.path.getPointAtLength(flight_path, step);
-
-            let x = moveToPoint.x - (width / 2);
-            let y = moveToPoint.y - (height / 2);
-
-
-            spaceship.transform('translate(' + x + ',' + y + ') rotate(' + (moveToPoint.alpha - 90) + ', ' + width / 2 + ', ' + height / 2 + ')');
-
-        }, 2500, mina.easeout, function () {
-
-            Snap.animate(forth_path_length, half_path_length, function (step) {
-
+        var last_step = 0;
+        var anim = function(){
+            Snap.animate(0, full_path_length, function (step) {
+                spaceship_img.attr({ visibility: "visible" });
+                spaceship_img.attr({ width: width, height: height });
                 last_step = step;
-                let moveToPoint = Snap.path.getPointAtLength(flight_path, step);
-
-                let x = moveToPoint.x - width / 2;
-                let y = moveToPoint.y - height / 2;
+                var moveToPoint = Snap.path.getPointAtLength(flight_path, step);
+                var x = moveToPoint.x - width / 2;
+                var y = moveToPoint.y - height / 2;
                 spaceship.transform('translate(' + x + ',' + y + ') rotate(' + (moveToPoint.alpha - 90) + ', ' + width / 2 + ', ' + height / 2 + ')');
-            }, 7000, mina.easein, function () {
-                //done
-
+            }, 5000, mina.easeinout, function () {
+                //done - repeat
+                anim()
             });
-
-        });
-
-
+        };
+        anim();
     },
     getPath: function () {
         return this._coords;
